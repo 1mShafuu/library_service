@@ -43,6 +43,15 @@ async def list_available_books(
     return [BookResponse.model_validate(b) for b in books]
 
 
+@router.get("/{book_id}/rating")
+async def get_book_with_rating(
+        book_id: int,
+        db: AsyncSession = Depends(get_db)
+):
+    service = LibraryService(db)
+    return await service.get_book_with_rating(book_id)
+
+
 @router.put("/{book_id}", response_model=BookResponse)
 async def update_book(
         book_id: int,

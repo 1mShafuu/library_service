@@ -7,6 +7,7 @@ celery = Celery(__name__)
 celery.conf.broker_url = settings.CELERY_BROKER_URL
 celery.conf.result_backend = settings.CELERY_RESULT_BACKEND
 
+
 @celery.task
 def generate_report_task():
     with SessionLocal() as db:

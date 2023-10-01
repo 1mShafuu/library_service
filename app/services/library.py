@@ -1,11 +1,12 @@
 from datetime import date, datetime, timedelta
-from typing import Optional, List
-from sqlalchemy import select, and_, delete
+from typing import Optional, Any, Sequence
+from sqlalchemy import select, and_, delete, Row, RowMapping
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from app.models import Book, Reader, Loan, Address, Author, ArchivedLoan
+from app.models import Book, Reader, Loan, Address, Author, ArchivedLoan, ArchivedBook
 from app.schemas import BookCreate, ReaderCreate, ReaderUpdate, LoanCreate, BookUpdate
 from fastapi import HTTPException
+from app.external.book_rating_client import BookRatingClient
 import logging
 
 logger = logging.getLogger(__name__)
@@ -14,6 +15,7 @@ logger = logging.getLogger(__name__)
 class LibraryService:
     def __init__(self, db: AsyncSession):
         self.db = db
+        self.rating_client = BookRatingClient()
 
     # === Address Operations ===
     async def _get_or_create_address(self, city: str, street: str) -> int:
@@ -66,6 +68,25 @@ class LibraryService:
         )
         return result.scalar_one_or_none()
 
+    async def get_book_with_rating(self, book_id: int) -> dict:
+        result = await self.db.execute(
+            select(Book).options(selectinload(Book.author)).where(Book.id == book_id)
+        )
+        book = result.scalar_one_or_none()
+
+        if not book:
+            raise HTTPException(status_code=404, detail="Книга не найдена")
+
+        rating = await self.rating_client.get_rating(book.title)
+
+        return {
+            "id": book.id,
+            "title": book.title,
+            "genre": book.genre,
+            "author": book.author.name,
+            "average_rating": rating
+        }
+
     async def update_book(self, book_id: int, book_data: BookUpdate) -> Book:
         book = await self.get_book(book_id)
         if not book:
@@ -84,7 +105,6 @@ class LibraryService:
         return book
 
     async def delete_book(self, book_id: int) -> None:
-        # 1) Получаем книгу вместе с её займами и автором
         result = await self.db.execute(
             select(Book)
             .options(selectinload(Book.loans), selectinload(Book.author))
@@ -95,36 +115,34 @@ class LibraryService:
         if not book:
             raise HTTPException(status_code=404, detail="Книга не найдена")
 
-        # 2) Проверяем, нет ли незакрытых займов
-        for ln in book.loans:
-            if ln.return_date is None:
-                raise HTTPException(
-                    status_code=400,
-                    detail="Нельзя удалить книгу: есть незавершённые займы"
-                )
+        for loan in book.loans:
+            if loan.return_date is None:
+                raise HTTPException(status_code=400, detail="Нельзя удалить книгу: она всё ещё в займе")
 
-        # 3) Копируем каждую строку займа в archived_loans
-        for ln in book.loans:
-            archived = ArchivedLoan(
-                original_loan_id=ln.id,
-                book_id=ln.book_id,
-                reader_id=ln.reader_id,
-                loan_date=ln.loan_date,
-                expected_return_date=ln.expected_return_date,
-                return_date=ln.return_date,
+        for loan in book.loans:
+            archived_loan = ArchivedLoan(
+                original_loan_id=loan.id,
+                book_id=loan.book_id,
+                reader_id=loan.reader_id,
+                loan_date=loan.loan_date,
+                expected_return_date=loan.expected_return_date,
+                return_date=loan.return_date,
             )
-            self.db.add(archived)
+            self.db.add(archived_loan)
 
-        # 4) Удаляем все займы из loans для этой книги
-        await self.db.execute(delete(Loan).where(Loan.book_id == book_id))
+        archived_book = ArchivedBook(
+            original_book_id=book.id,
+            title=book.title,
+            genre=book.genre,
+            author_name=book.author.name,
+        )
+        self.db.add(archived_book)
 
-        # 5) Удаляем книгу
+        await self.db.execute(delete(Loan).where(Loan.book_id == book.id))
         await self.db.delete(book)
-
-        # 6) Фиксируем транзакцию
         await self.db.commit()
 
-    async def get_available_books(self) -> List[Book]:
+    async def get_available_books(self) -> Sequence[Row[Any] | RowMapping | Any]:
         result = await self.db.execute(
             select(Book).options(selectinload(Book.author)).where(Book.is_available == True)
         )
