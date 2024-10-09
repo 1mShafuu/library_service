@@ -33,7 +33,7 @@ class Library:
         VALUES (%s, %s, %s)
         """
         self.db.execute_query(query, (title, author_id, genre)) 
-        print(f"Книга '{title}' добавлена в базу данных.")
+        print(f"Book '{title}' added to database.")
 
     def delete_book(self, book_id):
         self.db.execute_query("DELETE FROM books WHERE id = %s", (book_id,))
@@ -55,7 +55,7 @@ class Library:
         VALUES (%s, %s, %s);
         """
         self.db.execute_query(query, (name, address_id, date.today()))
-        print(f"Читатель '{name}' добавлен с адресом: {city}, {street}.")
+        print(f"Reader '{name}' added with address: {city}, {street}.")
 
     def update_reader(self, reader_id, name, city, street):
         address_id = self.add_address(city, street)
@@ -65,7 +65,7 @@ class Library:
         WHERE id = %s;
         """
         self.db.execute_query(query, (name, address_id, date.today(), reader_id))
-        print(f"Данные читателя '{name}' обновлены.")
+        print(f"Reader data '{name}' updated.")
 
     def delete_reader(self, reader_id):
         self.db.execute_query("DELETE FROM readers WHERE id = %s", (reader_id,))
@@ -85,9 +85,9 @@ class Library:
                 "INSERT INTO book_loans (book_id, reader_id, loan_date, expected_return_date) VALUES (%s, %s, %s, %s)",
                 (book_id, reader_id, date.today(), expected_return_date)
             )
-            print("Книга успешно выдана.")
+            print("The book has been successfully issued.")
         else:
-            print("Книга уже выдана и недоступна для выдачи.")
+            print("The book has already been issued and is not available for issue.")
 
     def get_active_loan(self, book_id, reader_id):
         # Получаем активный займ для конкретной книги и читателя
@@ -107,6 +107,6 @@ class Library:
                 "UPDATE book_loans SET return_date = %s WHERE id = %s",
                 (date.today(), loan_id)
             )
-            print("Книга успешно возвращена.")
+            print("The book was successfully returned.")
         else:
-            print("Ошибка: либо книга не была взята, либо она уже возвращена.")
+            print("Error: either the book was not taken, or it has already been returned.")

@@ -5,9 +5,9 @@ from menus import main_menu
 
 def main():
     db_config = {
-        'dbname': 'testbit',
-        'user': 'postgres',
-        'password': 'postgres',
+        'dbname': 'your_db_name',
+        'user': 'your_username',
+        'password': 'your_password',
         'host': 'localhost',
         'port': '5432'
     }
