@@ -1,0 +1,1 @@
+{"type": "FeatureCollection", "features": [{"type": "Feature", "geometry": {"type": "Point", "coordinates": [-72.5196973, 43.3336528]}, "properties": {"city": "Springfield", "street": "Maple St"}}, {"type": "Feature", "geometry": {"type": "Point", "coordinates": [-72.5196973, 43.3336528]}, "properties": {"city": "Springfield", "street": "Maple St"}}]}

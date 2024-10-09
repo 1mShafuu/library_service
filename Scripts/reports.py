@@ -15,7 +15,7 @@ class Reports:
         if not os.path.exists(self.report_dir):
             os.makedirs(self.report_dir)
 
-    def __save_to_csv(self, data, filename):
+    def save_to_csv(self, data, filename):
         df = pd.DataFrame(data)
         df.to_csv(f"{self.report_dir}{filename}.csv", index=False)
 

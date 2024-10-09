@@ -1,16 +1,16 @@
+import json
 from database import DatabaseConnection
 from library import Library
 from reports import Reports
 from menus import main_menu
 
+def load_db_config(config_file: str) -> dict:
+    """Загружает конфигурацию базы данных из файла JSON."""
+    with open(config_file, 'r') as f:
+        return json.load(f)
+
 def main():
-    db_config = {
-        'dbname': 'your_db_name',
-        'user': 'your_username',
-        'password': 'your_password',
-        'host': 'localhost',
-        'port': '5432'
-    }
+    db_config = load_db_config('db_config.json')
 
     with DatabaseConnection(db_config) as db:
         library = Library(db)
