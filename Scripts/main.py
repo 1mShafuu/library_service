@@ -5,7 +5,7 @@ from reports import Reports
 from menus import main_menu
 
 def load_db_config(config_file: str) -> dict:
-    """Загружает конфигурацию базы данных из файла JSON."""
+    #Загружаем конфигурацию базы данных postgres из файла JSON
     with open(config_file, 'r') as f:
         return json.load(f)
 
