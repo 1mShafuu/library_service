@@ -1,9 +1,10 @@
 import psycopg2
 
+
 class DatabaseConnection:
     def __init__(self, db_config):
         self.db_config = db_config
-    
+
     def __enter__(self):
         self.conn = psycopg2.connect(**self.db_config)
         self.cursor = self.conn.cursor()
@@ -17,8 +18,9 @@ class DatabaseConnection:
         self.cursor.execute(query, params)
         return self.cursor.fetchall()
 
-    def execute_query(self, query, params=None):
+    def execute_query(self, query, params=None, return_result=False):
         self.cursor.execute(query, params)
         self.conn.commit()
 
-##
+        if return_result:
+            return self.cursor.fetchone()

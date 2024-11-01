@@ -1,5 +1,7 @@
-from library import Library
-from reports import Reports
+from library import Book, Reader, Address, Loan
+from pydantic import ValidationError
+from datetime import datetime, date
+
 
 def main_menu(library, reports):
     while True:
@@ -24,6 +26,7 @@ def main_menu(library, reports):
         else:
             print("Invalid option, please try again.")
 
+
 def book_menu(library):
     while True:
         print("\nBook Menu")
@@ -35,22 +38,54 @@ def book_menu(library):
 
         if choice == '1':
             title = input("Enter book title: ")
+            if not is_valid_name(title):
+                print("Invalid book title, please try again.")
+                continue
+
             author_name = input("Enter author name: ")
+            if not is_valid_name(author_name):
+                print("Invalid author name, please try again.")
+                continue
+
             genre = input("Enter book genre: ")
-            library.add_book(title, author_name, genre)
+            if not is_valid_name(genre):
+                print("Invalid book genre, please try again.")
+                continue
+
+            library.add_book(Book(title=title, author_name=author_name, genre=genre))
         elif choice == '2':
-            book_id = int(input("Enter book ID to remove: "))
-            library.delete_book(book_id)
+            book_id = input("Enter book ID to remove: ")
+            if not is_valid_id(book_id):
+                print("Invalid ID. Please enter a valid book ID.")
+                continue
+            library.delete_book(int(book_id))
         elif choice == '3':
-            book_id = int(input("Enter book ID to update: "))
-            title = input("Enter new book title: ")
-            genre = input("Enter new book genre: ")
-            author_id = int(input("Enter new author ID: "))
-            library.update_book(book_id, title, genre, author_id)
+            book_id = input("Enter book ID to update: ")
+            if not is_valid_id(book_id):
+                print("Invalid ID. Please enter a valid book ID.")
+                continue
+
+            title = input("Enter book title: ")
+            if not is_valid_name(title):
+                print("Invalid book title, please try again.")
+                continue
+
+            genre = input("Enter book genre: ")
+            if not is_valid_name(genre):
+                print("Invalid book genre, please try again.")
+                continue
+
+            author_name = input("Enter author name: ")
+            if not is_valid_name(author_name):
+                print("Invalid author name, please try again.")
+                continue
+
+            library.update_book(int(book_id), Book(title=title, author_name=author_name, genre=genre))
         elif choice == '4':
             break
         else:
             print("Invalid option, please try again.")
+
 
 def reader_menu(library):
     while True:
@@ -63,16 +98,49 @@ def reader_menu(library):
 
         if choice == '1':
             name = input("Enter reader name: ")
-            address = input("Enter reader address: ")
-            library.add_reader(name, address)
+            if not is_valid_name(name):
+                print("Invalid name. Please enter a valid name.")
+                continue
+
+            city = input("Enter reader city: ")
+            if not is_valid_address(city):
+                print("Invalid city. Please enter a valid city.")
+                continue
+
+            street = input("Enter reader street (Street name + St) : ")
+            if not is_valid_street(street):
+                print("Invalid street. Please enter a valid street.")
+                continue
+
+            library.add_reader(Reader(name=name, address=Address(city=city, street=street)))
         elif choice == '2':
-            reader_id = int(input("Enter reader ID to remove: "))
-            library.delete_reader(reader_id)
+            reader_id = input("Enter reader ID to remove: ")
+            if not is_valid_id(reader_id):
+                print("Invalid ID. Please enter a valid reader ID.")
+                continue
+            library.delete_reader(int(reader_id))
         elif choice == '3':
-            reader_id = int(input("Enter reader ID to update: "))
+            reader_id = input("Enter reader ID to update: ")
+            if not is_valid_id(reader_id):
+                print("Invalid ID. Please enter a valid reader ID.")
+                continue
+
             name = input("Enter new reader name: ")
-            address = input("Enter new reader address: ")
-            library.update_reader(reader_id, name, address)
+            if not is_valid_name(name):
+                print("Invalid name. Please enter a valid name.")
+                continue
+
+            city = input("Enter new reader city: ")
+            if not is_valid_address(city):
+                print("Invalid city. Please enter a valid city.")
+                continue
+
+            street = input("Enter new reader street (Street name + St): ")
+            if not is_valid_street(street):
+                print("Invalid street. Please enter a valid street.")
+                continue
+
+            library.update_reader(int(reader_id), Reader(name=name, address=Address(city=city, street=street)))
         elif choice == '4':
             break
         else:
@@ -88,18 +156,72 @@ def loan_menu(library):
         choice = input("Select an option: ")
 
         if choice == '1':
-            book_id = int(input("Enter book ID: "))
-            reader_id = int(input("Enter reader ID: "))
-            expected_return_date = input("Enter expected return date (YYYY-MM-DD): ")
-            library.add_loan(book_id, reader_id, expected_return_date)
+            try:
+                book_id = input("Enter book ID: ")
+                if not is_valid_id(book_id):
+                    print("Invalid book ID. Please enter a valid integer ID.")
+                    continue
+                book_id = int(book_id)
+
+                reader_id = input("Enter reader ID: ")
+                if not is_valid_id(reader_id):
+                    print("Invalid reader ID. Please enter a valid integer ID.")
+                    continue
+                reader_id = int(reader_id)
+
+                expected_return_date_str = input("Enter expected return date (YYYY-MM-DD): ")
+                expected_return_date = datetime.strptime(expected_return_date_str, "%Y-%m-%d").date()
+
+                if expected_return_date <= date.today():
+                    print("Error: The return date must be in the future.")
+                    continue
+
+                # Проверяем существование книги
+                if not library.book_exists(book_id):
+                    print(f"Error: Book with ID {book_id} does not exist.")
+                    continue
+
+                # Проверяем существование читателя
+                if not library.reader_exists(reader_id):
+                    print(f"Error: Reader with ID {reader_id} does not exist.")
+                    continue
+
+                # Проверяем, доступна ли книга для аренды
+                if not library.is_book_available(book_id):
+                    print("This book is currently not available for loan.")
+                    continue
+
+                # Создаем объект Loan и добавляем его
+                loan = Loan(book_id=book_id, reader_id=reader_id, expected_return_date=expected_return_date)
+                library.add_loan(loan)
+                print("The book loan was successful")
+
+            except ValidationError as e:
+                print(
+                    f"Validation error: {e}. Please ensure the expected return date is in the correct format ("
+                    f"YYYY-MM-DD).")
+            except ValueError:
+                print("Invalid input. Please enter valid integers for book ID and reader ID.")
+            except Exception as e:
+                print(f"An unexpected error occurred: {e}")
         elif choice == '2':
-            book_id = int(input("Enter book ID: "))
-            reader_id = int(input("Enter reader ID: "))
-            library.return_loan(book_id, reader_id)
+            try:
+                book_id = int(input("Enter book ID: "))
+                reader_id = int(input("Enter reader ID: "))
+
+                # Возвращаем заем
+                library.return_loan(book_id, reader_id)
+
+            except ValueError:
+                print("Invalid input. Please enter valid integers for book ID and reader ID.")
+            except Exception as e:
+                print(f"An unexpected error occurred: {e}")
+
         elif choice == '3':
             break
         else:
             print("Invalid option, please try again.")
+
 
 def report_menu(reports):
     while True:
@@ -129,3 +251,19 @@ def report_menu(reports):
             break
         else:
             print("Invalid option, please try again.")
+
+
+def is_valid_name(name: str) -> bool:
+    return bool(name) and all(char.isalpha() or char.isspace() for char in name)
+
+
+def is_valid_address(address: str) -> bool:
+    return bool(address)
+
+
+def is_valid_street(street: str) -> bool:
+    return bool(street)
+
+
+def is_valid_id(input_id: str) -> bool:
+    return input_id.isdigit() and int(input_id) > 0

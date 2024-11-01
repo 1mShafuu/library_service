@@ -32,3 +32,17 @@ CREATE TABLE book_loans (
     return_date DATE,
     expected_return_date DATE
 );
+
+ALTER TABLE book_loans
+    ALTER COLUMN book_id DROP NOT NULL,
+    ALTER COLUMN reader_id DROP NOT NULL;
+
+ALTER TABLE book_loans
+    DROP CONSTRAINT IF EXISTS book_loans_book_id_fkey,
+    DROP CONSTRAINT IF EXISTS book_loans_reader_id_fkey;
+
+ALTER TABLE book_loans
+    ADD CONSTRAINT book_loans_book_id_fkey
+    FOREIGN KEY (book_id) REFERENCES books(id) ON DELETE CASCADE ,
+    ADD CONSTRAINT book_loans_reader_id_fkey
+    FOREIGN KEY (reader_id) REFERENCES readers(id) ON DELETE CASCADE;

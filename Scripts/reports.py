@@ -1,17 +1,16 @@
 import os
 import json
-from datetime import date
 import pandas as pd
 import ssl
 from geopy.exc import GeocoderTimedOut
 from geopy.geocoders import Nominatim
-from urllib.request import urlopen
+
 
 class Reports:
     def __init__(self, db):
         self.db = db
         self.report_dir = "reports/"
-        
+
         if not os.path.exists(self.report_dir):
             os.makedirs(self.report_dir)
 
@@ -89,9 +88,9 @@ class Reports:
             WHERE rn = 1
             ORDER BY reader_name;
         ''')
-        
+
         self.save_to_csv(favorite_genres, "favorite_genre_by_reader")
-        
+
         for reader, genre in favorite_genres:
             print(f"Reader: {reader}, Favorite genre: {genre}")
 
@@ -140,7 +139,7 @@ class Reports:
         ''')
 
         features = []
-        
+
         for city, street in locations:
             address = f"{street}, {city}"
             try:

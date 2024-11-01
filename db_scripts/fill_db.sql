@@ -24,7 +24,7 @@ INSERT INTO authors (name) VALUES
 
 INSERT INTO books (title, genre, author_id) VALUES
 ('1984', 'Dystopian', 1),
-('Harry Potter and the Sorcerer\'s Stone', 'Fantasy', 2),
+('Harry Potter and the Sorcerer Stone', 'Fantasy', 2),
 ('War and Peace', 'Historical Fiction', 3),
 ('The Adventures of Tom Sawyer', 'Adventure', 4),
 ('Pride and Prejudice', 'Romance', 5),
