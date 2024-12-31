@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     CELERY_RESULT_BACKEND: str = "redis://localhost:6379/0"
     GEOCODING_TIMEOUT: int = 10
     GOOGLE_BOOKS_API_KEY: str
+    PROJECT_NAME: str = "LibraryAPI"
 
     @property
     def DATABASE_URL(self):

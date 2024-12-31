@@ -1,12 +1,11 @@
 from contextlib import asynccontextmanager
-import asyncio
-print("Task is from:", asyncio.Task.__module__)
-print("Task:", asyncio.Task)
+
+# print("Task is from:", asyncio.Task.__module__)
+# print("Task:", asyncio.Task)
 from fastapi import FastAPI
 from app.db.session import engine, Base
 from app.api.v1 import books_router, readers_router, loans_router, reports_router
 import uvicorn
-from app import models
 
 
 @asynccontextmanager

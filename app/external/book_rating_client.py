@@ -1,7 +1,5 @@
 import aiohttp
 from typing import Optional
-from urllib.parse import quote
-import os
 from app.core.config import settings
 
 
