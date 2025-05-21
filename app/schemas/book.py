@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, constr
 from .author import AuthorResponse
 from typing import Optional
 
@@ -13,7 +13,7 @@ class BookCreate(BookBase):
 
 
 class BookUpdate(BaseModel):
-    title: Optional[str]
+    title: constr(max_length=2)
     genre: Optional[str]
     author_name: Optional[str]
 
