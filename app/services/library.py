@@ -3,7 +3,7 @@ from typing import Optional, List
 from sqlalchemy import select, and_, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from app.models import Book, Reader, Loan, Address, Author, ArchivedBook
+from app.models import Book, Reader, Loan, Address, Author
 from app.schemas import BookCreate, ReaderCreate, ReaderUpdate, LoanCreate, BookUpdate
 from fastapi import HTTPException
 import logging
@@ -98,15 +98,6 @@ class LibraryService:
                     status_code=400,
                     detail="Нельзя удалить книгу: она всё ещё в займе",
                 )
-
-        # Архивируем книгу перед удалением
-        archived_book = ArchivedBook(
-            original_book_id=book.id,
-            title=book.title,
-            genre=book.genre,
-            author_name=book.author.name
-        )
-        self.db.add(archived_book)
 
         # Удаляем саму книгу
         await self.db.delete(book)
