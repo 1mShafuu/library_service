@@ -39,7 +39,7 @@ class Library:
         INSERT INTO addresses (city_name, street_name)
         VALUES (%s, %s) RETURNING id;
         """
-        result = self.db.execute_query_returning(query, (address.city, address.street))
+        result = self.db.execute_and_fetch_one(query, (address.city, address.street))
         return result[0]  # Возвращаем ID нового адреса
 
     def find_author_by_name(self, author_name: str) -> Optional[int]:
@@ -49,7 +49,7 @@ class Library:
 
     def add_author(self, author: Author) -> int:
         query = "INSERT INTO authors (name) VALUES (%s) RETURNING id"
-        author_id = self.db.execute_query_returning(query, (author.name,))
+        author_id = self.db.execute_and_fetch_one(query, (author.name,))
         return author_id[0]  # Возвращаем ID нового автора
 
     def add_book(self, book: Book) -> None:

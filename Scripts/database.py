@@ -18,11 +18,15 @@ class DatabaseConnection:
         self.cursor.execute(query, params)
         return self.cursor.fetchall()
 
-    def execute_query(self, query, params=None):
+    def _execute(self, query, params=None):
         self.cursor.execute(query, params)
         self.conn.commit()
 
-    def execute_query_returning(self, query, params=None):
-        self.cursor.execute(query, params)
-        self.conn.commit()
+    def execute_query(self, query, params=None):
+        """Выполняет запрос без возврата результата."""
+        self._execute(query, params)
+
+    def execute_and_fetch_one(self, query, params=None):
+        """Выполняет запрос и возвращает одну строку результата."""
+        self._execute(query, params)
         return self.cursor.fetchone()
