@@ -4,5 +4,6 @@ from app.models.author import Author
 from app.models.reader import Reader
 from app.models.address import Address
 from app.models.loan import Loan
+from app.models.archived_loan import ArchivedLoan
 
-__all__ = ["Base", "Book", "Author", "Reader", "Address", "Loan"]
+__all__ = ["Base", "Book", "Author", "Reader", "Address", "Loan", "ArchivedLoan"]

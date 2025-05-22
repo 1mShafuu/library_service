@@ -3,7 +3,7 @@ from typing import Optional, List
 from sqlalchemy import select, and_, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
-from app.models import Book, Reader, Loan, Address, Author
+from app.models import Book, Reader, Loan, Address, Author, ArchivedLoan
 from app.schemas import BookCreate, ReaderCreate, ReaderUpdate, LoanCreate, BookUpdate
 from fastapi import HTTPException
 import logging
@@ -84,23 +84,44 @@ class LibraryService:
         return book
 
     async def delete_book(self, book_id: int) -> None:
+        # 1) Получаем книгу вместе с её займами и автором
         result = await self.db.execute(
-            select(Book).options(selectinload(Book.author), selectinload(Book.loans)).where(Book.id == book_id)
+            select(Book)
+            .options(selectinload(Book.loans), selectinload(Book.author))
+            .where(Book.id == book_id)
         )
         book = result.scalar_one_or_none()
 
         if not book:
             raise HTTPException(status_code=404, detail="Книга не найдена")
 
-        for loan in book.loans:
-            if loan.return_date is None:
+        # 2) Проверяем, нет ли незакрытых займов
+        for ln in book.loans:
+            if ln.return_date is None:
                 raise HTTPException(
                     status_code=400,
-                    detail="Нельзя удалить книгу: она всё ещё в займе",
+                    detail="Нельзя удалить книгу: есть незавершённые займы"
                 )
 
-        # Удаляем саму книгу
+        # 3) Копируем каждую строку займа в archived_loans
+        for ln in book.loans:
+            archived = ArchivedLoan(
+                original_loan_id=ln.id,
+                book_id=ln.book_id,
+                reader_id=ln.reader_id,
+                loan_date=ln.loan_date,
+                expected_return_date=ln.expected_return_date,
+                return_date=ln.return_date,
+            )
+            self.db.add(archived)
+
+        # 4) Удаляем все займы из loans для этой книги
+        await self.db.execute(delete(Loan).where(Loan.book_id == book_id))
+
+        # 5) Удаляем книгу
         await self.db.delete(book)
+
+        # 6) Фиксируем транзакцию
         await self.db.commit()
 
     async def get_available_books(self) -> List[Book]:

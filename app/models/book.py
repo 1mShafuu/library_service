@@ -13,4 +13,4 @@ class Book(Base):
     is_available = Column(Boolean, default=True)
 
     author = relationship("Author", back_populates="books")
-    loans = relationship("Loan", back_populates="book", cascade="all, delete-orphan")
+    loans = relationship("Loan", back_populates="book")
