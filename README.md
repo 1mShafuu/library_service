@@ -61,3 +61,56 @@ Library API — это асинхронное приложение для упр
    ```bash
    git clone https://github.com/yourusername/library-api.git
    cd library-api
+2. Установите зависимости из requirements.txt:
+   ```bash
+   pip install -r requirements.txt
+3. Создайте файл .env в корне проекта и пропишите настройки:
+    ```bash
+    DATABASE_URL=postgresql+asyncpg://user:password@localhost/library_db
+    PROJECT_NAME=LibraryAPI
+    GEOCODING_TIMEOUT=10
+
+---
+
+## Запуск проекта
+
+Для запкуска используйте команду:
+    ```bash
+    uvicorn app.main:app --host 127.0.0.1 --port 8080 --reload
+
+## API эндпоинты
+
+- `/api/v1/books` — CRUD операции с книгами
+- `/api/v1/readers` — CRUD операции с читателями
+- `/api/v1/loans` — Управление выдачами книг
+- `/api/v1/reports` — Генерация отчетов
+
+Полная документация доступна по адресам:
+- Swagger UI: http://127.0.0.1:8080/docs
+- ReDoc: http://127.0.0.1:8080/redoc
+
+---
+
+## Отчеты
+
+- Общее количество книг и читателей
+- Количество книг, взятых каждым читателем
+- Количество книг, находящихся сейчас на руках у читателей
+- Дата последнего посещения читателя
+- Самый читаемый автор
+- Предпочитаемые жанры по убыванию
+- Любимый жанр каждого читателя
+- Географические данные активных читателей (GeoJSON)
+
+---
+
+## Конфигурация
+
+Настройки приложения:
+- `DATABASE_URL`: URL подключения к БД (пример: postgresql+asyncpg://user:password@localhost/library_db)
+- `PROJECT_NAME`: Название проекта
+- `GEOCODING_TIMEOUT`: Таймаут геокодирования в секундах
+
+Конфигурация загружается из .env файла через `app/core/config.py`.
+
+
