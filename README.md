@@ -109,7 +109,6 @@ Library API — это асинхронное приложение для упр
 
 Настройки приложения:
 - `DATABASE_URL`: URL подключения к БД (пример: postgresql+asyncpg://user:password@localhost/library_db)
-- `PROJECT_NAME`: Название проекта
 - `GEOCODING_TIMEOUT`: Таймаут геокодирования в секундах
 
 Конфигурация загружается из .env файла через `app/core/config.py`.
