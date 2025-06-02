@@ -76,7 +76,8 @@ Library API — это асинхронное приложение для упр
 
 Для запкуска используйте команду:
     ```bash
-    uvicorn app.main:app --host 127.0.0.1 --port 8080 --reload
+    
+    uvicorn app.main:app --host 127.0.0.1 --port 8080 --reload```
 
 ## API эндпоинты
 
